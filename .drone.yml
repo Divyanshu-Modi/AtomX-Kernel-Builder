@@ -1,0 +1,14 @@
+kind: pipeline
+name: AtomX Drone
+
+steps:
+ - name: compile
+   image: starlight2834/ci_docker:latest
+   environment:
+     BOT_API_KEY:
+       from_secret: BOT_API_KEY
+     CHAT_ID:
+       from_secret: CHAT_ID
+   commands:
+      - cd /drone/src
+      - bash builder.sh
