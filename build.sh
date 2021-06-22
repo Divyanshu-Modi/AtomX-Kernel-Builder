@@ -34,7 +34,7 @@
     sed -i 's/# CONFIG_LTO_GCC is not set/CONFIG_LTO_GCC=y/g' $CONFIG
     sed -i 's/# CONFIG_OPTIMIZE_INLINING is not set/CONFIG_OPTIMIZE_INLINING=y/g' $CONFIG
     make O=work $KERNEL
-    make O=work -j${nproc}            \
+    make O=work -j$(nproc)            \
       PATH=$GCC_PATH/bin:$PATH        \
       KBUILD_BUILD_USER=$USER         \
       KBUILD_BUILD_HOST=$HOST         \
