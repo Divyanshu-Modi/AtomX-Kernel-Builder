@@ -31,13 +31,12 @@
     BUILD_START=$(date +"%s")
 
     sed -i '/CONFIG_LTO_NONE=y/d' $CONFIG
+    sed -i '/CONFIG_LD_IS_BFD=y/d' $CONFIG
+    sed -i 's/# CONFIG_LD_IS_LLD is not set/CONFIG_LD_IS_LLD=y/g' $CONFIG
     sed -i 's/# CONFIG_LTO_GCC is not set/CONFIG_LTO_GCC=y/g' $CONFIG
     sed -i 's/# CONFIG_OPTIMIZE_INLINING is not set/CONFIG_OPTIMIZE_INLINING=y/g' $CONFIG
-    make O=work $KERNEL
-    make O=work -j$(nproc)            \
-      PATH=$GCC_PATH/bin:$PATH        \
-      KBUILD_BUILD_USER=$USER         \
-      KBUILD_BUILD_HOST=$HOST         \
+
+    make O=work $KERNEL               \
       CC=aarch64-elf-gcc              \
       HOSTCXX=aarch64-elf-g++         \
       HOSTLD=ld.lld                   \
@@ -47,6 +46,25 @@
       OBJCOPY=llvm-objcopy            \
       OBJDUMP=llvm-objdump            \
       STRIP=llvm-strip                \
+      KBUILD_BUILD_USER=$USER         \
+      KBUILD_BUILD_HOST=$HOST         \
+      PATH=$GCC_PATH/bin:$PATH        \
+      CROSS_COMPILE_COMPAT=$GCC_ARM32 \
+      LD_LIBRARY_PATH=$GCC_PATH/lib:$LD_LIBRARY_PATH
+
+    make O=work -j$(nproc)            \
+      CC=aarch64-elf-gcc              \
+      HOSTCXX=aarch64-elf-g++         \
+      HOSTLD=ld.lld                   \
+      AS=llvm-as                      \
+      AR=llvm-ar                      \
+      NM=llvm-nm                      \
+      OBJCOPY=llvm-objcopy            \
+      OBJDUMP=llvm-objdump            \
+      STRIP=llvm-strip                \
+      KBUILD_BUILD_USER=$USER         \
+      KBUILD_BUILD_HOST=$HOST         \
+      PATH=$GCC_PATH/bin:$PATH        \
       CROSS_COMPILE_COMPAT=$GCC_ARM32 \
       LD_LIBRARY_PATH=$GCC_PATH/lib:$LD_LIBRARY_PATH
 
