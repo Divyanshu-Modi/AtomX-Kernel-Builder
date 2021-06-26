@@ -30,11 +30,8 @@
     telegram-send " Starting Compilation for $DEVICE$CAM_LIB"
     BUILD_START=$(date +"%s")
 
-    sed -i '/CONFIG_LTO_NONE=y/d' $CONFIG
-    sed -i '/CONFIG_LD_IS_BFD=y/d' $CONFIG
-    sed -i 's/# CONFIG_LD_IS_LLD is not set/CONFIG_LD_IS_LLD=y/g' $CONFIG
-    sed -i 's/# CONFIG_LTO_GCC is not set/CONFIG_LTO_GCC=y/g' $CONFIG
-    sed -i 's/# CONFIG_OPTIMIZE_INLINING is not set/CONFIG_OPTIMIZE_INLINING=y/g' $CONFIG
+    sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_GCC=y' $CONFIG
+    sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_OPTIMIZE_INLINING=y' $CONFIG
 
     make O=work $KERNEL               \
       CC=aarch64-elf-gcc              \
@@ -94,7 +91,8 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
 $changelog"
     telegram-send --file $OUT/*.zip
     telegram-send "$final"
+    exit 1
 else
     telegram-send "Error! Compilaton failed: Kernel Image missing"
-    exit
+    exit -1
 fi
