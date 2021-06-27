@@ -1,10 +1,7 @@
 #bin/#!/bin/bash
 
-  apt-get -y update \
-  && apt-get -y upgrade \
-  && apt-get -y install \
-  git libxml2 python3-pip \
-  default-jre
+apt-get -y update && apt-get -y upgrade && apt-get -y install \
+git libxml2 python3-pip default-jre flex bison
 
 mv build.sh $HOME/build.sh
 sed -i s/demo1/${BOT_API_KEY}/g telegram-send.conf
