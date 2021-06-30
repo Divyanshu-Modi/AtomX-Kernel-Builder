@@ -1,6 +1,6 @@
 # AtomX Kernel Builder
 
-## Result of last run ##
+## Build status ##
 [![Build Status](https://cloud.drone.io/api/badges/Divyanshu-Modi/AtomX-Kernel-Builder/status.svg?ref=refs/heads/main)](https://cloud.drone.io/Divyanshu-Modi/AtomX-Kernel-Builder)
 
 ## What this is ##
