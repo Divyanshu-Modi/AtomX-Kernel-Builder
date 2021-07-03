@@ -13,7 +13,7 @@
     GCC_ARM32=$HOME/gcc-arm32/bin/arm-eabi-
 
 #DEVICE
-    SILENCE=0
+    SILENCE=1
     DEVICE=tulip
     BUILD=clean
     CAM_LIB=
@@ -36,26 +36,21 @@ else
     FLAG=
 fi
 muke() {
-    make O=work $CFLAG ARCH=arm64 $FLAG\
-      AS=llvm-as                       \
-      AR=llvm-ar                       \
-      NM=llvm-nm                       \
-      HOSTLD=ld.lld                    \
-      STRIP=llvm-strip                 \
-      CC=aarch64-elf-gcc               \
-      OBJCOPY=llvm-objcopy             \
-      OBJDUMP=llvm-objdump             \
-      KBUILD_BUILD_USER=$USER          \
-      KBUILD_BUILD_HOST=$HOST          \
-      HOSTCXX=aarch64-elf-g++          \
-      PATH=$GCC_PATH/bin:$PATH         \
-      CROSS_COMPILE_COMPAT=$GCC_ARM32  \
+    make O=work $CFLAG ARCH=arm64 $FLAG \
+      LLVM=1                            \
+      HOSTCC=gcc                        \
+      HOSTLD=ld.lld                     \
+      CC=aarch64-elf-gcc                \
+      HOSTCXX=aarch64-elf-g++           \
+      KBUILD_BUILD_USER=$USER           \
+      KBUILD_BUILD_HOST=$HOST           \
+      PATH=$GCC_PATH/bin:$PATH          \
+      CROSS_COMPILE_COMPAT=$GCC_ARM32   \
       LD_LIBRARY_PATH=$GCC_PATH/lib:$LD_LIBRARY_PATH
 }
 
     sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_GCC=y' $CONFIG
     sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_OPTIMIZE_INLINING=y' $CONFIG
-
     CFLAG=$DFCF
     muke
 
@@ -67,9 +62,9 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
     cd $ZIP_DIR
     cp $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb $ZIP_DIR/
     sed -i s/demo1/$DEVICE/g $AKSH
-if [[ "$DEVICE2" ]]; then
-    sed -i /device.name1/ a device.name2=$DEVICE2 $AKSH
-fi
+    if [[ "$DEVICE2" ]]; then
+        sed -i /device.name1/ a device.name2=$DEVICE2 $AKSH
+    fi
     zip -qr9 "$FINAL_ZIP".zip * -x README.md *placeholder zipsigner*
     java -jar zipsigner* "$FINAL_ZIP".zip "$FINAL_ZIP"-signed.zip
     cp "$FINAL_ZIP"-signed.zip $OUT

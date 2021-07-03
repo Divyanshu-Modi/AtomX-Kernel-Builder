@@ -9,23 +9,21 @@ sed -i s/demo2/${CHAT_ID}/g telegram-send.conf
 mv telegram-send.conf $HOME/telegram-send.conf
 cd $HOME
 
-echo Cloning Toolchain
-git clone --depth=1 https://github.com/mvaisakh/gcc-arm64 gcc-arm64
-git clone --depth=1 https://github.com/mvaisakh/gcc-arm gcc-arm32
+git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm64 gcc-arm64
+git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm gcc-arm32
+echo Successfully Cloned Toolchain
 
-echo Cloning AnyKernel3
-git clone --depth=1 https://github.com/Divyanshu-Modi/AnyKernel3 Repack
+git clone -q --depth=1 https://github.com/Divyanshu-Modi/AnyKernel3 Repack
+echo Successfully Cloned AnyKernel3
 
-echo Cloning Sources
-git clone https://github.com/Divyanshu-Modi/Atom-X-Kernel -b main Kernel
+git clone -q https://github.com/Divyanshu-Modi/Atom-X-Kernel -b main Kernel
+echo Successfully Cloned Kernel Source
 
 mv $HOME/build.sh $HOME/Kernel/build.sh
-echo Script Installed Successfully
-
-echo Installing telegram Api
-pip3 install telegram-send
+pip3 -q install telegram-send
+echo Successfully Installed telegram Api
 mkdir $HOME/.config
 mv $HOME/telegram-send.conf $HOME/.config/telegram-send.conf
 
-echo building kernel GCC
+echo building kernel
 bash $HOME/Kernel/build.sh
