@@ -13,7 +13,7 @@
     GCC_ARM32=$HOME/gcc-arm32/bin/arm-eabi-
 
 #DEVICE
-    SILENCE=1
+    SILENCE=0
     DEVICE=tulip
     BUILD=clean
     CAM_LIB=
