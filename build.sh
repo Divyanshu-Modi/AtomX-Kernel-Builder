@@ -1,24 +1,14 @@
 #bin/#!/bin/bash
-# SPDX-License-Identifier: GPL-2.0
-# Copyright (c) 2021, Divyanshu-Modi <divyan.m05@gmail.com>
 
-#USER
     KERNEL_DIR=$HOME/Kernel
     cd $KERNEL_DIR
     USER=OGIndian
     HOST=Nucleus
-
-#GCC
     GCC_PATH=$HOME/gcc-arm64
     GCC_ARM32=$HOME/gcc-arm32/bin/arm-eabi-
-
-#DEVICE
-    SILENCE=0
     DEVICE=tulip
     BUILD=clean
     CAM_LIB=
-
-#PATHS
     ZIP_DIR=$HOME/Repack
     AKSH=$ZIP_DIR/anykernel.sh
     DFCF=AtomX-$DEVICE${CAM_LIB}_defconfig
@@ -27,16 +17,14 @@
     OUT=$KERNEL_DIR/out
     mkdir work
 
-    telegram-send " Starting Compilation for $DEVICE$CAM_LIB"
+    telegram-send "Building Kernel for $DEVICE"
+if [[ "$CAM_LIB" != "" ]]; then
+    telegram-send "Camlib: $CAM_LIB"
+fi
     BUILD_START=$(date +"%s")
 
-if [[ "$SILENCE" == "1" ]]; then
-    FLAG=-s
-else
-    FLAG=
-fi
 muke() {
-    make O=work $CFLAG ARCH=arm64 $FLAG \
+    make O=work $CFLAG ARCH=arm64 -s    \
       LLVM=1                            \
       HOSTCC=gcc                        \
       HOSTLD=ld.lld                     \
