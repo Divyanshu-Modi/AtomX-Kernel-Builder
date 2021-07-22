@@ -72,9 +72,8 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
 	else
 		CAM=$CAM_LIB
 	fi
-
-	source work/.config
-	telegram-send --format html "\
+	
+	msg_content="
 	***************Atom-X-Kernel***************
 	Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
 	Linux Version: <code>$(make kernelversion)</code>
@@ -85,7 +84,10 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
 	Camlib: <code>$CAM</code>
 	Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
 	Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>
-	Changelog: <a href='$SOURCE'> Here </a>"
+	Changelog: <a href='$SOURCE'> Here </a>
+	"
+	source work/.config
+	telegram-send --format html "$msg_content"
 	telegram-send --file $OUT/"${FINAL_ZIP}-signed.zip"
 
 	exit
