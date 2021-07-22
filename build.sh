@@ -86,7 +86,7 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
 	Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
 	Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>
 	Changelog: <a href='$SOURCE'> Here </a>"
-	telegram-send -f $OUT/"${FINAL_ZIP}-signed.zip"
+	telegram-send --file $OUT/"${FINAL_ZIP}-signed.zip"
 
 	exit
 else
