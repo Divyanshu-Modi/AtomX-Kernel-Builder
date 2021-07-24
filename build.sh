@@ -18,6 +18,7 @@
 	ZIP_DIR=$HOME/Repack
 	AKSH=$ZIP_DIR/anykernel.sh
 	cd $KERNEL_DIR
+	mkdir work
 
 # Defconfig
 	DFCF=AtomX-$DEVICE${CAM_LIB}_defconfig
@@ -67,8 +68,10 @@ if [[ -f $KERNEL_DIR/work/arch/arm64/boot/Image.gz-dtb ]]; then
 		CAM=$CAM_LIB
 	fi
 
-	source work/.config
 	telegram-send --file $ZIP_DIR/$FINAL_ZIP
+
+	cd $KERNEL_DIR
+	source work/.config
 	telegram-send --format html "\
 	**************Atom-X-Kernel**************
 	Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
