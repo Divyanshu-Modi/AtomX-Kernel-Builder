@@ -3,8 +3,8 @@
 pacman -Syu --noconfirm --needed git bc inetutils zip libxml2 python3 \
                                  jre-openjdk jdk-openjdk flex bison libc++ python-pip
 
-git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm64 -b  gcc-new $HOME/gcc-arm64
-git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-new $HOME/gcc-arm32
+git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm64 -b  gcc-master $HOME/gcc-arm64
+git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master $HOME/gcc-arm32
 git clone -q --depth=1 https://gitlab.com/ElectroPerf/atom-x-clang $HOME/clang
 git clone -q --depth=1 https://github.com/Divyanshu-Modi/AnyKernel3 $HOME/Repack
 git clone -q --depth=1 https://github.com/Divyanshu-Modi/Atom-X-Kernel -b main $HOME/Kernel
