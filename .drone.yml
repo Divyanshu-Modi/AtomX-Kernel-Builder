@@ -14,3 +14,7 @@ steps:
    commands:
       - cd /drone/src
       - bash Setup.sh
+
+trigger:
+  event:
+  - custom
