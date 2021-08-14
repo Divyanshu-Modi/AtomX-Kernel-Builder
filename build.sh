@@ -5,6 +5,10 @@
 # COMPILER
 	COMPILER="$1"
 
+# Kernel Version API
+	export KERNEL_VERSION_LONG=$(make kernelversion)
+	export KERNEL_VERSION_SHORT=$(make kernelversion | cut -c 1-3)
+
 # User config
 	USER=OGIndian
 	HOST=$(uname -n)
@@ -123,7 +127,7 @@
 		telegram-send --format html "\
 		**************Atom-X-Kernel**************
 		Compiler: <code>$CONFIG_CC_VERSION_TEXT</code>
-		Linux Version: <code>$(make kernelversion)</code>
+		Linux Version: <code>$KERNEL_VERSION_LONG</code>
 		Builder Version: <code>$VERSION</code>
 		Maintainer: <code>$USER</code>
 		Device: <code>$NAME</code>
