@@ -17,5 +17,9 @@ mkdir $HOME/.config
 mv telegram-send.conf $HOME/.config/telegram-send.conf
 mv build.sh $HOME/Kernel/build.sh
 bash $HOME/Kernel/build.sh CLANG
-bash $HOME/Kernel/build.sh GCC
+if [[ "$CONTINUE_BUILD" == "yes" ]]; then
+    bash $HOME/Kernel/build.sh GCC
+elif [[ "$CONTINUE_BUILD" == "no" ]]; then
+    telegram-send "Not building GCC build as Clang build failed"
+fi
 exit
