@@ -132,7 +132,9 @@
 		Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
 		Build Duration: <code>$(($DIFF / 60)).$(($DIFF % 60)) mins</code>
 		Changelog: <a href='$SOURCE'> Here </a>"
+		export CONTINUE_BUILD="yes"
 	else
 		telegram-send "Error⚠️ Compilaton failed: Kernel Image missing"
+		export CONTINUE_BUILD="no"
 		exit 1
 	fi
