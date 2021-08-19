@@ -3,46 +3,34 @@
 #bin/#!/bin/bash
 
 	COMPILER="$1"
-	USER=OGIndian
-	HOST=$(uname -n)
-	VERSION=4.1-hotfix
-	CLANG_PATH=$HOME/clang
-	CLANG_ARM64=aarch64-linux-gnu-
-	CLANG_COMPAT=arm-linux-gnueabi-
-	GCC_PATH=$HOME/gcc-arm64
-	GCC_COMPAT=$HOME/gcc-arm32/bin/arm-eabi-
+	USER='OGIndian'
+	HOST="$(uname -n)"
+	VERSION'=4.5'
 	DEVICENAME='Redmi Note 6 Pro'
-	DEVICE=tulip
-	CAM_LIB=
-	KERNEL_DIR=$HOME/Kernel
-	ZIP_DIR=$HOME/Repack
-	AKSH=$ZIP_DIR/anykernel.sh
-	KRNLVER=$(make kernelversion | cut -c 1-3)
-	DFCF=AtomX-$DEVICE${CAM_LIB}_defconfig
-	CONFIG=$KERNEL_DIR/arch/arm64/configs/$DFCF
+	DEVICE='tulip'
+	CAM_LIB=''
+	KERNEL_DIR="$HOME/Kernel"
+	ZIP_DIR="$HOME/Repack"
+	AKSH="$ZIP_DIR/anykernel.sh"
+	DFCF="AtomX-$DEVICE${CAM_LIB}_defconfig"
+	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 	mkdir $COMPILER
 
 # Set variables
 	if [[ "$COMPILER" == "CLANG" ]]; then
-		CC=clang
-		HOSTCC=clang
-		HOSTCXX=clang++
-		C_PATH=$CLANG_PATH
-		CC_COMPAT=$CLANG_COMPAT
-		ETXRA_FLAGS="CROSS_COMPILE=$CLANG_ARM64"
+		CC='clang'
+		HOSTCC='clang'
+		HOSTCXX='clang++'
+		C_PATH="$HOME/clang"
+		CC_COMPAT='arm-linux-gnueabi-'
+		EXTRA_FLAGS='CROSS_COMPILE=aarch64-linux-gnu-'
 	elif [[ "$COMPILER" == "GCC" ]]; then
-		HOSTCC=gcc
-		C_PATH=$GCC_PATH
-		CC=aarch64-elf-gcc
-		HOSTCXX=aarch64-elf-g++
-		CC_COMPAT=$GCC_COMPAT
-		ETXRA_FLAGS="LD_LIBRARY_PATH=$GCC_PATH/lib:$LD_LIBRARY_PATH"
-	fi
-
-	if [[ $KRNLVER == 4.4 || $KRNLVER == 4.9 || $KRNLVER == 4.14 || $VDSO_BACKPORT != 1 ]]; then
-		CROSS_COMPILE_32=CROSS_COMPILE_ARM32
-	else
-		CROSS_COMPILE_32=CROSS_COMPILE_COMPAT
+		HOSTCC='gcc'
+		CC='aarch64-elf-gcc'
+		C_PATH="$HOME/gcc-arm64"
+		HOSTCXX='aarch64-elf-g++'
+		CC_COMPAT="$HOME/gcc-arm32/bin/arm-eabi-"
+		EXTRA_FLAGS="LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH"
 	fi
 
 	muke() {
@@ -50,14 +38,15 @@
 		    $FLAG                          \
 			CC=$CC                         \
 			LLVM=1                         \
-			${ETXRA_FLAGS}                 \
+			$EXTRA_FLAGS                   \
 			HOSTLD=ld.lld                  \
 			HOSTCC=$HOSTCC                 \
 			HOSTCXX=$HOSTCXX               \
 			PATH=$C_PATH/bin:$PATH         \
 			KBUILD_BUILD_USER=$USER        \
 			KBUILD_BUILD_HOST=$HOST        \
-			$CROSS_COMPILE_32=$CC_COMPAT
+			CROSS_COMPILE_ARM32=$CC_COMPAT \
+			CROSS_COMPILE_COMPAT=$CC_COMPAT
 	}
 
 	BUILD_START=$(date +"%s")
