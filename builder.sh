@@ -18,10 +18,6 @@
 
 	cd $HOME/Kernel
 	bash build.sh CLANG
-	if [[ "$CONTINUE_BUILD" == "yes" ]]; then
-		bash build.sh GCC
-	elif [[ "$CONTINUE_BUILD" == "no" ]]; then
-		telegram-send "GCC build aborted due to clang build failure!"
-	fi
+	bash build.sh GCC
 
 	exit
