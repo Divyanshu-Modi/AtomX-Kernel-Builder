@@ -13,6 +13,12 @@
 	ZIP_DIR="$HOME/Repack"
 	AKSH="$ZIP_DIR/anykernel.sh"
 	DFCF="AtomX-$DEVICE${CAM_LIB}_defconfig"
+	if [[ ! -f $KERNEL_DIR/arch/arm64/configs/$DFCF ]]; then
+		DFCF="$DEVICE${CAM_LIB}-perf_defconfig"
+		if [[ ! -f $KERNEL_DIR/arch/arm64/configs/$DFCF ]]; then
+			DFCF="$DEVICE${CAM_LIB}_defconfig"
+        fi
+	fi
 	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 	mkdir $COMPILER
 
@@ -53,24 +59,24 @@
 
 	BUILD_START=$(date +"%s")
 
-	if [[ "$COMPILER" == "CLANG" ]]; then
-		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_CLANG=y' $CONFIG
-		sed -i '/CONFIG_LTO_CLANG/ a # CONFIG_THINLTO is not set' $CONFIG
-	elif [[ "$COMPILER" == "GCC" ]]; then
-		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_GCC=y' $CONFIG
-		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_OPTIMIZE_INLINING=y' $CONFIG
-	fi
+#	if [[ "$COMPILER" == "CLANG" ]]; then
+#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_CLANG=y' $CONFIG
+#		sed -i '/CONFIG_LTO_CLANG/ a # CONFIG_THINLTO is not set' $CONFIG
+#	elif [[ "$COMPILER" == "GCC" ]]; then
+#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_GCC=y' $CONFIG
+#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_OPTIMIZE_INLINING=y' $CONFIG
+#	fi
 
 	CFLAG=$DFCF
 	muke
 
-	if [[ "$COMPILER" == "CLANG" ]]; then
-		sed -i '/CONFIG_LTO_CLANG=y/d' $CONFIG
-		sed -i '/# CONFIG_THINLTO is not set/d' $CONFIG
-	elif [[ "$COMPILER" == "GCC" ]]; then
-		sed -i '/CONFIG_LTO_GCC=y/d' $CONFIG
-		sed -i '/CONFIG_OPTIMIZE_INLINING=y/d' $CONFIG
-	fi
+#	if [[ "$COMPILER" == "CLANG" ]]; then
+#		sed -i '/CONFIG_LTO_CLANG=y/d' $CONFIG
+#		sed -i '/# CONFIG_THINLTO is not set/d' $CONFIG
+#	elif [[ "$COMPILER" == "GCC" ]]; then
+#		sed -i '/CONFIG_LTO_GCC=y/d' $CONFIG
+#		sed -i '/CONFIG_OPTIMIZE_INLINING=y/d' $CONFIG
+#	fi
 
 	CFLAG=-j$(nproc)
 	muke
