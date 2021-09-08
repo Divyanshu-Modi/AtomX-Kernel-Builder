@@ -2,7 +2,7 @@
 
 	git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm64 -b  gcc-master $HOME/gcc-arm64
 	git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master $HOME/gcc-arm32
-	git clone -q --depth=1 https://github.com/Neutron-Clang/neutron-toolchain $HOME/clang
+	git clone -q --depth=1 https://gitlab.com/ElectroPerf/atom-x-clang $HOME/clang
 	git clone -q --depth=1 https://github.com/Divyanshu-Modi/AnyKernel3 $HOME/Repack
 	git clone -q --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_sdm660 -b temp $HOME/Kernel
 	pip3 -q install telegram-send
