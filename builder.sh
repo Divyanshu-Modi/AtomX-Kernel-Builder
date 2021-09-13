@@ -4,7 +4,7 @@
 	git clone -q --depth=1 https://github.com/mvaisakh/gcc-arm -b gcc-master $HOME/gcc-arm32
 	git clone -q --depth=1 https://gitlab.com/ElectroPerf/atom-x-clang $HOME/clang
 	git clone -q --depth=1 https://github.com/Divyanshu-Modi/AnyKernel3 $HOME/Repack
-	git clone -q --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_sdm660 -b temp $HOME/Kernel
+	git clone -q --depth=1 https://github.com/Atom-X-Devs/android_kernel_xiaomi_sdm660 $HOME/Kernel
 	pip3 -q install telegram-send
 
 	mkdir $HOME/.config
