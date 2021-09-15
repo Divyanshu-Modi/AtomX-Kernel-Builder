@@ -5,18 +5,17 @@
 	COMPILER="$1"
 	USER='OGIndian'
 	HOST="$(uname -n)"
-	VERSION='5.0'
+	VERSION='6.0'
 	DEVICENAME='Redmi Note 6 Pro'
 	DEVICE='tulip'
-	CAM_LIB=''
 	KERNEL_DIR="$HOME/Kernel"
 	ZIP_DIR="$HOME/Repack"
 	AKSH="$ZIP_DIR/anykernel.sh"
-	DFCF="AtomX-$DEVICE${CAM_LIB}_defconfig"
+	DFCF="AtomX-${DEVICE}_defconfig"
 	if [[ ! -f $KERNEL_DIR/arch/arm64/configs/$DFCF ]]; then
-		DFCF="$DEVICE${CAM_LIB}-perf_defconfig"
+		DFCF="${DEVICE}-perf_defconfig"
 		if [[ ! -f $KERNEL_DIR/arch/arm64/configs/$DFCF ]]; then
-			DFCF="$DEVICE${CAM_LIB}_defconfig"
+			DFCF="${DEVICE}_defconfig"
         fi
 	fi
 	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
@@ -58,37 +57,25 @@
 
 	BUILD_START=$(date +"%s")
 
-#	if [[ "$COMPILER" == "CLANG" ]]; then
-#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_CLANG=y' $CONFIG
-#		sed -i '/CONFIG_LTO_CLANG/ a # CONFIG_THINLTO is not set' $CONFIG
-#	elif [[ "$COMPILER" == "GCC" ]]; then
-#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_LTO_GCC=y' $CONFIG
-#		sed -i '/CONFIG_JUMP_LABEL/ a CONFIG_OPTIMIZE_INLINING=y' $CONFIG
-#	fi
-
 	CFLAG=$DFCF
 	muke
-
-#	if [[ "$COMPILER" == "CLANG" ]]; then
-#		sed -i '/CONFIG_LTO_CLANG=y/d' $CONFIG
-#		sed -i '/# CONFIG_THINLTO is not set/d' $CONFIG
-#	elif [[ "$COMPILER" == "GCC" ]]; then
-#		sed -i '/CONFIG_LTO_GCC=y/d' $CONFIG
-#		sed -i '/CONFIG_OPTIMIZE_INLINING=y/d' $CONFIG
-#	fi
+	source $COMPILER/.config
+	if [[ "CONFIG_LTO_CLANG_FULL=y" ]]; then
+		VARIANT=FULL_LTO
+	elif [[ "CONFIG_LTO_CLANG_THIN=y" ]]; then
+		VARIANT=THIN_LTO
+	else
+		VARIANT=NON_LTO
+	fi
+	telegram-send --format html "Building: <code>$VARIANT</code>"
 
 	CFLAG=-j$(nproc)
 	muke
 
 	if [[ -f $KERNEL_DIR/$COMPILER/arch/arm64/boot/Image.gz-dtb ]]; then
-		if [[ "$CAM_LIB" == "" ]]; then
-			CAM=OLD-CAM
-		else
-			CAM=$CAM_LIB
-		fi
-
-		source $COMPILER/.config
-		FINAL_ZIP="$DEVICE$CAM_LIB$CONFIG_LOCALVERSION-${COMPILER}_LTO-`date +"%H%M"`"
+		FDEVICE=${DEVICE^^}
+		KNAME=$(echo "$CONFIG_LOCALVERSION" | cut -c 2-)
+		FINAL_ZIP="$KNAME-$FDEVICE-`date +"%H%M"`"
 		cd $ZIP_DIR
 		cp $KERNEL_DIR/$COMPILER/arch/arm64/boot/Image.gz-dtb $ZIP_DIR/
 		sed -i "s/demo1/$DEVICE/g" $AKSH
@@ -117,6 +104,7 @@
 		Compiler-name: <code>$COMPILER_NAME</code>
 		Linux Version: <code>$(make kernelversion)</code>
 		Builder Version: <code>$VERSION</code>
+		Build Type: <code>$VARIANT</code>
 		Maintainer: <code>$USER</code>
 		Device: <code>$DEVICENAME</code>
 		Codename: <code>$DEVICE</code>
