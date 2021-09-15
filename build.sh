@@ -44,9 +44,8 @@
 		    $FLAG                          \
 			CC=$CC                         \
 			LLVM=1                         \
+			LLVM_IAS=1                     \
 			CROSS_COMPILE=$CC_64           \
-			$EXTRA_FLAGS                   \
-			HOSTLD=ld.lld                  \
 			HOSTCC=$HOSTCC                 \
 			HOSTCXX=$HOSTCXX               \
 			PATH=$C_PATH/bin:$PATH         \
