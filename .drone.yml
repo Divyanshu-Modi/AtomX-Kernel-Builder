@@ -3,7 +3,7 @@ name: AtomX Drone
 
 steps:
  - name: compile
-   image: ubuntu:jammy-20211029
+   image: ubuntu:20.10
    environment:
      BOT_API_KEY:
        from_secret: BOT_API_KEY
@@ -12,7 +12,7 @@ steps:
      SOURCE:
        from_secret: SOURCE
    commands:
-      - apt-get update --security-opt seccomp=unconfined && apt-get -y upgrade
+      - apt-get update && apt-get -y upgrade
       - ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
       - apt-get -y --allow-unauthenticated install gcc llvm lld g++-multilib clang git libxml2 python3-pip gcc llvm lld g++-multilib clang default-jre git automake lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng bc libstdc++6 libncurses5 wget python3 python3-pip gcc clang libssl-dev rsync flex git-lfs libz3-dev libz3-4 axel tar bc binutils-dev bison build-essential ca-certificates ccache clang cmake curl file flex git libelf-dev libssl-dev lld make ninja-build python3-dev texinfo u-boot-tools xz-utils zlib1g-dev && python3 -m pip install networkx
       - cd /drone/src
