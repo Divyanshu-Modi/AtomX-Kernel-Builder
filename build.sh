@@ -3,7 +3,7 @@
 # Made by Divyanshu-Modi
 # Revision: 18-09-2021 V1
 
-	VERSION='8.0'
+	VERSION='X'
 	COMPILER=""
 
 # USER
@@ -42,8 +42,8 @@
 	AKSH="$ZIP_DIR/anykernel.sh"
 
 # DEFCONFIG
-	DFCF="${DEVICE}-perf_defconfig"
-	CONFIG="$KERNEL_DIR/arch/arm64/configs/vendor/$DFCF"
+	DFCF="vendor/${DEVICE}-perf_defconfig"
+	CONFIG="$KERNEL_DIR/arch/arm64/configs/$DFCF"
 
 # Set variables
 	case $COMPILER in
