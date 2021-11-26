@@ -4,18 +4,14 @@
 # Revision: 18-09-2021 V1
 
 	VERSION='8.0'
-	COMPILER=$1
+	COMPILER=""
 
 # USER
 	USER='OGIndian'
 	HOST='AtomX-Drone'
 
 # DEVICE CONFIG
-	if [[ "COMPILER" != "" ]]; then
-		DEVICE=$2
-	else
-		DEVICE=$1
-	fi
+	DEVICE=$1
 	case $DEVICE in
 		tulip)
 			DEVICENAME='Redmi Note 6 Pro'
