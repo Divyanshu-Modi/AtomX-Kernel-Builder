@@ -4,16 +4,41 @@
 # Revision: 18-09-2021 V1
 
 	VERSION='8.0'
-	COMPILER='clang'
+	COMPILER=$1
 
 # USER
 	USER='OGIndian'
 	HOST='AtomX-Drone'
 
 # DEVICE CONFIG
-	DEVICENAME='Redmi Note 6 Pro'
-	DEVICE="$1"
-	DEVICE2="$2"
+	if [[ "COMPILER" != "" ]]; then
+		DEVICE=$2
+	else
+		DEVICE=$1
+	fi
+	case $DEVICE in
+		tulip)
+			DEVICENAME='Redmi Note 6 Pro'
+			DEVICE='tulip'
+			DEVICE2='tulix'
+		;;
+		whyred)
+			DEVICENAME='Redmi Note 5 (Pro)'
+			DEVICE='whyred'
+		;;
+		wayne)
+			DEVICENAME='Mi A2 / 6X'
+			DEVICE='wayne'
+			DEVICE2='jasmine_sprout'
+		;;
+		lavender)
+			DEVICENAME='Redmi Note 7'
+			DEVICE='lavender'
+		;;
+		*)
+			DEVICENAME='Unknown'
+		;;
+	esac
 
 # PATH
 	KERNEL_DIR="$HOME/Kernel"
@@ -26,21 +51,23 @@
 
 # Set variables
 	case $COMPILER in
-		clang)
-			CC='clang'
-			HOSTCC="$CC"
-			HOSTCXX="$CC++"
-			CC_64='aarch64-linux-gnu-'
-			CC_COMPAT='arm-linux-gnueabi-'
-			C_PATH="$HOME/clang"
-		;;
 		gcc)
+			COMPILER='gcc'
 			HOSTCC='gcc'
 			CC_64='aarch64-elf-'
 			CC='aarch64-elf-gcc'
 			CC_COMPAT='arm-eabi-'
 			HOSTCXX='aarch64-elf-g++'
 			C_PATH="$HOME/gcc-arm64/bin:$HOME/gcc-arm32/"
+		;;
+		*)
+			COMPILER='clang'
+			CC='clang'
+			HOSTCC="$CC"
+			HOSTCXX="$CC++"
+			CC_64='aarch64-linux-gnu-'
+			CC_COMPAT='arm-linux-gnueabi-'
+			C_PATH="$HOME/clang"
 		;;
 	esac
 
@@ -85,7 +112,7 @@
 	if [[ -f $KERNEL_DIR/$COMPILER/arch/arm64/boot/Image.gz-dtb ]]; then
 		FDEVICE=${DEVICE^^}
 		KNAME=$(echo "$CONFIG_LOCALVERSION" | cut -c 2-)
-		KV=$(cat $KERNEL_DIR/work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')
+		KV=$(cat $KERNEL_DIR/$COMPILER/include/generated/utsrelease.h | cut -c 21- | tr -d '"')
 
 		cp $KERNEL_DIR/$COMPILER/arch/arm64/boot/Image.gz-dtb $ZIP_DIR/
 
@@ -116,9 +143,12 @@
 		fi
 
 		DIFF=$(($BUILD_END - $BUILD_START))
-		COMPILER_NAME="$($C_PATH/bin/$CC --version 2>/dev/null | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
-		HEAD="$(git log --oneline HEAD~2..HEAD~ --decorate=auto)"
+		COMPILER_NAME="$(cat $KERNEL_DIR/$COMPILER/include/generated/compile.h | sed -n 7p | cut -c 24- | tr -d '"'))"
+		HEAD="$(git log --oneline -n1 --decorate=auto)"
 
+		wget https://telegra.ph/file/0441c7d01fab1a8abe5ed.jpg
+		mv *.jpg banner.jpg
+		telegram-send --image banner.jpg
 		telegram-send --disable-web-page-preview --format html "\
 		**************Atom-X-Kernel**************
 		Compiler: <code>$COMPILER</code>
