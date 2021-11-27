@@ -15,6 +15,10 @@ steps:
    commands:
       - apk -i upgrade
       - ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
-      - apk add gcc llvm lld bash clang git libxml2 gcc llvm lld clang git automake bison gperf zip curl libxml2-utils squashfs-tools pngcrush dpkg-dev make optipng bc libstdc++6 wget python3 gcc clang rsync flex git-lfs axel tar bc binutils-dev bison ca-certificates ccache clang cmake curl file flex git lld make python3-dev texinfo u-boot-tools
+      - apk --no-cache add ca-certificates wget
+      - wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
+      - wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.34-r0/glibc-2.34-r0.apk
+      - apk add glibc-2.34-r0.apk
+      - apk --no-cache add gcc llvm lld bash clang git libxml2 gcc llvm lld clang git automake bison gperf zip curl libxml2-utils squashfs-tools pngcrush dpkg-dev make optipng bc libstdc++6 wget python3 gcc clang rsync flex git-lfs axel tar bc binutils-dev bison ca-certificates ccache clang cmake curl file flex git lld make python3-dev texinfo u-boot-tools
       - cd /drone/src
       - bash builder.sh
