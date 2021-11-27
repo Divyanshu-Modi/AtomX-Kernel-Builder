@@ -127,7 +127,7 @@
 
 		FINAL_ZIP="$FINAL_ZIP-signed.zip"
 
-		telegram-send --file $ZIP_DIR/$FINAL_ZIP
+		telegram-send --file $FINAL_ZIP --timeout 40.0
 
 		rm *.zip Image.gz-dtb
 
