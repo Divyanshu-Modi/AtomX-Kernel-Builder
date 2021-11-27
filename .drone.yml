@@ -15,6 +15,6 @@ steps:
    commands:
       - apk -i upgrade
       - ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
-      - apk add gcc llvm lld g++-multilib clang git libxml2 python3-pip gcc llvm lld g++-multilib clang git automake lzop bison gperf zip curl zlib1g-dev libxml2-utils bzip squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng bc libstdc++6 libncurses5 wget python3 python3-pip gcc clang libssl-dev rsync flex git-lfs libz3-dev libz3-4 axel tar bc binutils-dev bison build-essential ca-certificates ccache clang cmake curl file flex git lld make python3-dev texinfo u-boot-tools xz-utils
+      - apk add gcc llvm lld clang git libxml2 python3-pip gcc llvm lld clang git automake bison gperf zip curl libxml2-utils squashfs-tools pngcrush schedtool dpkg-dev make optipng bc libstdc++6 wget python3 gcc clang rsync flex git-lfs axel tar bc binutils-dev bison ca-certificates ccache clang cmake curl file flex git lld make python3-dev texinfo u-boot-tools xz-utils
       - cd /drone/src
       - bash builder.sh
