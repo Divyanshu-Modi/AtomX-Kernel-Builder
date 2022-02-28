@@ -1,16 +1,26 @@
-#########################  COMPILER CONFIG ##################################
+#########################    CONFIGURATION    ##############################
 
 # User details
-KBUILD_USER="$USER"
+KBUILD_USER="AtomX"
 KBUILD_HOST=$(uname -n)
+
+# Verbose mode (verbose build: 0 | silent build: 1) 
+# (default: 0 | modes: 0, 1)
+SILENCE='0'
+
+# Do modules (Perform modules post compile process: 1 | No modules: 0)
+# (default: 0 | modes: 0, 1)
+MODULES='1'
+
+# Build type (Fresh build: clean | incremental build: dirty)
+# (default: dirty | modes: clean, dirty)
+BUILD='clean'
 
 # Compiler
 # (default: clang | modes: clang, gcc) 
 COMPILER='clang'
 
-############################################################################
-
-##########################  DEVICES CONFIG  ################################
+#  DEVICES CONFIG  #
 
 # Device Name
 # Eg: (For lisa: Xiaomi 11 lite 5G NE) 
@@ -28,10 +38,6 @@ SUFFIX='qgki'
 # Eg: (image: Image, Image.gz, Image.gz-dtb) 
 TARGET='Image'
 
-# Do modules (Perform modules post compile process: 1 | No modules: 0)
-# (default: 0 | modes: 0, 1) 
-MODULES='1'
-
 ############################################################################
 
 ########################    DIRECTOR PATHS   ###############################
@@ -40,7 +46,7 @@ MODULES='1'
 KERNEL_DIR=`pwd`
 
 # PATH (default paths may not work!)
-PRO_PATH="$KERNEL_DIR/../"
+PRO_PATH="$KERNEL_DIR/.."
 
 # Anykernel directories
 AK3_DIR="$PRO_PATH/AnyKernel3"
@@ -50,53 +56,60 @@ AKVDR="$AK3_DIR/modules/vendor/lib/modules"
 # Toolchain directory
 TLDR="$PRO_PATH/toolchains"
 
+# DTS path
+DTS_PATH="$KERNEL_DIR/work/arch/arm64/boot/dts/vendor/qcom"
+
 ############################################################################
 
-###############################   STATUS   #################################
+###############################   MISC   #################################
 
 # functions
 error() {
-	telegram-send "Error⚠️: $1"
+	telegram-send "Error⚠️: $@"
 	exit 1
 }
 
 success() {
-	telegram-send "Success: $1"
+	telegram-send "Success: $@"
 	exit 0
 }
 
 inform() {
-	telegram-send "$1"
+	telegram-send "Inform: $@"
+}
+
+muke() {
+	if [[ "$SILENCE" == "1" ]]; then
+		KERN_MAKE_ARGS="-s $KERN_MAKE_ARGS"
+	fi
+
+	make $@ $KERN_MAKE_ARGS
 }
 
 ############################################################################
 
 compiler_setup() {
 ############################  COMPILER SETUP  ##############################
-case $COMPILER in
-	clang)
-		CC='clang'
-		HOSTCC="$CC"
-		HOSTCXX="$CC++"
-		CC_64='aarch64-linux-gnu-'
-		C_PATH="$TLDR/clang"
-	;;
-	gcc)
-		HOSTCC='gcc'
-		CC_64='aarch64-elf-'
-		CC='aarch64-elf-gcc'
-		HOSTCXX='aarch64-elf-g++'
-		C_PATH="$TLDR/gcc-arm64"
-	;;
-esac
-CC_32="$TLDR/gcc-arm/bin/arm-eabi-"
-CC_COMPAT="$TLDR/gcc-arm/bin/arm-eabi-gcc"
+	case $COMPILER in
+		clang)
+			CC='clang'
+			HOSTCC="$CC"
+			HOSTCXX="$CC++"
+			CC_64='aarch64-linux-gnu-'
+			C_PATH="$TLDR/clang"
+		;;
+		gcc)
+			HOSTCC='gcc'
+			CC_64='aarch64-elf-'
+			CC='aarch64-elf-gcc'
+			HOSTCXX='aarch64-elf-g++'
+			C_PATH="$TLDR/gcc-arm64"
+		;;
+	esac
+	CC_32="$TLDR/gcc-arm/bin/arm-eabi-"
+	CC_COMPAT="$TLDR/gcc-arm/bin/arm-eabi-gcc"
 
-muke() {
-	CFLAG=$1
-	FLAG=$2
-
-	make O=work $CFLAG ARCH=arm64 $FLAG  \
+	KERN_MAKE_ARGS="O=work ARCH=arm64    \
 		CC=$CC                           \
 		LLVM=1                           \
 		LLVM_IAS=1                       \
@@ -105,143 +118,131 @@ muke() {
 		HOSTCXX=$HOSTCXX                 \
 		CROSS_COMPILE=$CC_64             \
 		CC_COMPAT=$CC_COMPAT             \
-		DTC_EXT=/usr/bin/dtc             \
+		DTC_EXT=$(which dtc)             \
 		PATH=$C_PATH/bin:$PATH           \
 		CROSS_COMPILE_COMPAT=$CC_32      \
 		KBUILD_BUILD_USER=$KBUILD_USER   \
 		KBUILD_BUILD_HOST=$KBUILD_HOST   \
-		LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH
-}
-
+		LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH"
 ############################################################################
 }
 
 build() {
 ##################################  BUILD  #################################
-rm -rf work || mkdir work
+	case $BUILD in
+		clean)
+			rm -rf work || mkdir work
+		;;
+		*)
+			muke clean mrproper distclean
+		;;
+	esac
 
-DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
+	DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
 
-# Build Start
-inform "                Build Started                "
+	if [[ "$REGEN_DEFCONFIG" == "1" ]]; then
+		regen
+	fi
 
-BUILD_START=$(date +"%s")
+	inform "Build Started"
 
-# Make .config
-muke $DFCF
+	# Build Start
+	BUILD_START=$(date +"%s")
 
-inform "                Building Kernel Image                "
+	# Make .config
+	muke $DFCF
 
-# Compile
-muke -j$(nproc)
+	inform "Building Kernel - Stage 1"
 
-if [[ "$MODULES" == "1" ]]; then
-	inform "                Building Kernel Modules                "
-	muke -j$(nproc) 'modules_prepare'
+	# Compile
+	muke -j$(nproc)
 
-	muke -j$(nproc) "modules INSTALL_MOD_PATH="$KERNEL_DIR"/out/modules"
+	if [[ "$MODULES" == "1" ]]; then
+		inform "Building Kernel Modules - Stage 2"
 
-	muke -j$(nproc) "modules_install INSTALL_MOD_PATH="$KERNEL_DIR"/out/modules"
-fi
+		muke -j$(nproc) 'modules_install' \
+						INSTALL_MOD_STRIP=1 \
+						INSTALL_MOD_PATH="modules"
+	fi
 
-# Build End
-BUILD_END=$(date +"%s")
+	# Build End
+	BUILD_END=$(date +"%s")
 
-if [[ -f $KERNEL_DIR/work/arch/arm64/boot/$TARGET ]]; then
-   zip_ak
-else
-   error 'Kernel image not found'
-fi
+	DIFF=$(($BUILD_END - $BUILD_START))
+
+	if [[ -f $KERNEL_DIR/work/arch/arm64/boot/$TARGET ]]; then
+		zip_ak
+	else
+		error 'Kernel image not found'
+	fi
 ############################################################################
 }
 
 build_dtb() {
 ##########################   DTBO BUILDER   #################################
-if [[ "$1" == "dtbo.img" ]]; then
-   inform "                 Building dtbo.img                "
-else
-   inform "                 Building dtb.img                "
-fi
+	case $1 in
+		dtbo)
+			dtb_build=dtbo.img
+			dtb_target=*.dtbo
+		;;
+		dtb)
+			dtb_build=dtb/dtb.img
+			dtb_target=*.dtb
+		;;
+		*)
+			error 'variable not recognised'
+		;;
+	esac
+	inform "Building $1.img"
 
-python2 scripts/mkdtboimg.py create          \
-	$AK3_DIR/$1                               \
-	--page_size=4096                          \
-	$KERNEL_DIR/work/arch/arm64/boot/dts/vendor/qcom/$2
+	python2 scripts/mkdtboimg.py create \
+		$AK3_DIR/$dtb_build					\
+		--page_size=4096						\
+		$DTS_PATH/$dtb_target
 ############################################################################
 }
 
 zip_ak() {
 ####################################  ZIP  #################################
 	if [[ ! -d $AK3_DIR ]]; then
-	   error 'Anykernel not present cannot zip'
+		error 'Anykernel not present cannot zip'
 	fi
 
-	source work/.config
-
-	FDEVICE=${CODENAME^^}
-	KNAME=$(echo "$CONFIG_LOCALVERSION" | cut -c 2-)
-	KV=$(cat $KERNEL_DIR/work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')
-
-	inform "                Cloning Image                "
 	cp $KERNEL_DIR/work/arch/arm64/boot/$TARGET $AK3_DIR
 	if [[ "$MODULES" == "1" ]]; then
-		inform "                Cloning Modules                "
-		cp $(find out/modules/lib/modules/5.4* -name '*.ko') $AKVDR
-		cp out/modules/lib/modules/5.4*/modules.{alias,dep,softdep} $AKVDR
-		cp out/modules/lib/modules/5.4*/modules.order $AKVDR/modules.load
+		inform "Building Kernel Zip - Stage 3"
+
+		MOD_NAME="$(cat work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')"
+		MOD_PATH="work/modules/lib/modules/$MOD_NAME"
+
+		cp $(find $MOD_PATH -name '*.ko') $AKVDR
+		cp $MOD_PATH/modules.{alias,dep,softdep} $AKVDR
+		cp $MOD_PATH/modules.order $AKVDR/modules.load
 		sed -i 's/\(kernel\/[^: ]*\/\)\([^: ]*\.ko\)/\/vendor\/lib\/modules\/\2/g' $AKVDR/modules.dep
 		sed -i 's/.*\///g' $AKVDR/modules.load
-		cp $KERNEL_DIR/work/arch/arm64/boot/dts/vendor/qcom/*.dtb $AK3_DIR/dtb
-#		build_dtb 'dtb/dtb.img' *.dtb
-		build_dtb 'dtbo.img' *.dtbo
-	else
-		if [[ ! -d "$KERNEL_DIR/out" ]]; then
-			mkdir $KERNEL_DIR/out
-		fi
-	fi
-
-	sed -i "s/demo1/$CODENAME/g" $AKSH
-	if [[ "$CODENAME2" != "" ]]; then
-		sed -i "/device.name1/ a device.name2=$CODENAME2" $AKSH
+		cp $DTS_PATH/*.dtb $AK3_DIR/dtb
+		build_dtb 'dtbo'
 	fi
 
 	cd $AK3_DIR
 
-	FINAL_ZIP="$KNAME-$FDEVICE-`date +"%H%M"`"
+	make zip
 
-	inform "                Zipping started                "
-	zip -r9 "$FINAL_ZIP".zip * -x README.md *placeholder zipsigner*
+	inform "Pushing zip to telegram"
+	telegram-send --file *-signed.zip
 
-	inform "                 Signing Zip                "
-	java -jar zipsigner* "$FINAL_ZIP.zip" "$FINAL_ZIP-signed.zip"
-
-	FINAL_ZIP="$FINAL_ZIP-signed.zip"
-
-	cp $FINAL_ZIP $KERNEL_DIR/out
-	telegram-send --file $KERNEL_DIR/out/$FINAL_ZIP
-
-	if [[ "$MODULES" == "1" ]]; then
-		rm modules/vendor/lib/modules/modules.{alias,dep,softdep,load}
-		TARGET="modules/vendor/lib/modules/*.ko\
-				dtbo.img\
-				dtb/dtb.img\
-				$TARGET"
-	fi
-	rm *.zip $TARGET
+	make clean
 
 	cd $KERNEL_DIR
-
-	sed -i "s/$CODENAME/demo1/g" $AKSH
-	if [[ "$CODENAME2" != "" ]]; then
-		sed -i "/device.name2/d" $AKSH
-	fi
-
-	DIFF=$(($BUILD_END - $BUILD_START))
 
 	success "build completed in $(($DIFF / 60)).$(($DIFF % 60)) mins"
 
 ############################################################################
 }
+
+# Remove testing of System.map as test always fails to check for file
+# DO NOT MODIFY!!!!
+sed -i '13d;14d;15d;16d;17d' $KERNEL_DIR/scripts/depmod.sh
 
 compiler_setup
 build

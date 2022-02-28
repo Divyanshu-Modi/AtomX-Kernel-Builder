@@ -3,7 +3,7 @@ name: AtomX Drone
 
 steps:
  - name: compile
-   image: ubuntu:jammy-20211029
+   image: atomxorg/archlinux:latest
    environment:
      BOT_API_KEY:
        from_secret: BOT_API_KEY
@@ -12,11 +12,5 @@ steps:
      SOURCE:
        from_secret: SOURCE
    commands:
-      - cp -af sources.list /etc/apt/
-      - cp -af 99own /etc/apt/apt.conf.d/
-      - apt-get update && apt-get -y clean && apt-get -y autoremove && apt-get -y upgrade
-      - apt-get install -yq tzdata
-      - ln -fs /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && date
-      - apt-get -y install git bison flex libxml2 libssl-dev bc zip default-jre python3 python2 python3-pip wget
       - cd /drone/src
       - bash Setup.sh
