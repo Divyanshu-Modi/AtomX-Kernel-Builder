@@ -41,7 +41,7 @@
 ############################## Setup Kernel ################################
 
 	inform 'Cloning Kernel'
-	gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_sm7325 -b kernel.lnx.5.4.r1-rel Kernel
+	gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_sm7325 -b lisa-r-oss Kernel
 
 ############################################################################
 

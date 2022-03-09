@@ -139,10 +139,7 @@ build() {
 	esac
 
 	DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
-
-	if [[ "$REGEN_DEFCONFIG" == "1" ]]; then
-		regen
-	fi
+	DFCF="lisa_defconfig"
 
 	inform "Build Started"
 
@@ -178,30 +175,6 @@ build() {
 ############################################################################
 }
 
-build_dtb() {
-##########################   DTBO BUILDER   #################################
-	case $1 in
-		dtbo)
-			dtb_build=dtbo.img
-			dtb_target=*.dtbo
-		;;
-		dtb)
-			dtb_build=dtb/dtb.img
-			dtb_target=*.dtb
-		;;
-		*)
-			error 'variable not recognised'
-		;;
-	esac
-	inform "Building $1.img"
-
-	python2 scripts/mkdtboimg.py create \
-		$AK3_DIR/$dtb_build					\
-		--page_size=4096						\
-		$DTS_PATH/$dtb_target
-############################################################################
-}
-
 zip_ak() {
 ####################################  ZIP  #################################
 	if [[ ! -d $AK3_DIR ]]; then
@@ -221,7 +194,7 @@ zip_ak() {
 		sed -i 's/\(kernel\/[^: ]*\/\)\([^: ]*\.ko\)/\/vendor\/lib\/modules\/\2/g' $AKVDR/modules.dep
 		sed -i 's/.*\///g' $AKVDR/modules.load
 		cp $DTS_PATH/*.dtb $AK3_DIR/dtb
-		build_dtb 'dtbo'
+		cp $DTS_PATH/*.img $AK3_DIR/
 	fi
 
 	cd $AK3_DIR
