@@ -2,7 +2,7 @@
 
 # User details
 KBUILD_USER="AtomX"
-KBUILD_HOST=$(uname -n)
+KBUILD_HOST="Drone"
 
 # Verbose mode (verbose build: 0 | silent build: 1) 
 # (default: 0 | modes: 0, 1)
@@ -75,7 +75,7 @@ success() {
 }
 
 inform() {
-	telegram-send "Inform: $@"
+	telegram-send --format html "$@"
 }
 
 muke() {
@@ -132,16 +132,25 @@ build() {
 	case $BUILD in
 		clean)
 			rm -rf work || mkdir work
+			BUILD_TYPE=$BUILD
 		;;
 		*)
 			muke clean mrproper distclean
+			BUILD_TYPE="incremental"
 		;;
 	esac
 
 	DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
-	DFCF="lisa_defconfig"
 
-	inform "Build Started"
+	inform "
+  *************Build Triggered*************
+  Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
+  Build Type: <code>$BUILD_TYPE</code>
+  Device: <code>$DEVICENAME</code>
+  Codename: <code>$CODENAME</code>
+  Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1)</code>
+  Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
+  "
 
 	# Build Start
 	BUILD_START=$(date +"%s")
@@ -149,14 +158,10 @@ build() {
 	# Make .config
 	muke $DFCF
 
-	inform "Building Kernel - Stage 1"
-
 	# Compile
 	muke -j$(nproc)
 
 	if [[ "$MODULES" == "1" ]]; then
-		inform "Building Kernel Modules - Stage 2"
-
 		muke -j$(nproc) 'modules_install' \
 						INSTALL_MOD_STRIP=1 \
 						INSTALL_MOD_PATH="modules"
@@ -183,8 +188,6 @@ zip_ak() {
 
 	cp $KERNEL_DIR/work/arch/arm64/boot/$TARGET $AK3_DIR
 	if [[ "$MODULES" == "1" ]]; then
-		inform "Building Kernel Zip - Stage 3"
-
 		MOD_NAME="$(cat work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')"
 		MOD_PATH="work/modules/lib/modules/$MOD_NAME"
 
@@ -197,11 +200,33 @@ zip_ak() {
 		cp $DTS_PATH/*.img $AK3_DIR/
 	fi
 
+	KERNEL_VERSION=$(make kernelversion)
+	LAST_COMMIT=$(git show -s --format=%s)
+	LAST_HASH=$(git rev-parse --short HEAD)
+
 	cd $AK3_DIR
 
 	make zip
 
-	inform "Pushing zip to telegram"
+
+inform "
+  *************AtomX-Kernel*************
+  Linux Version: <code>$KERNEL_VERSION</code>
+  CI: <code>$KBUILD_HOST</code>
+  Core count: <code>$(nproc)</code>
+  Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1)</code>
+  Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
+  Device: <code>$DEVICENAME</code>
+  Codename: <code>$CODENAME</code>
+  Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
+  Build Type: <code>$BUILD_TYPE</code>
+
+  -----------last commit details-----------
+  Last commit (name): <code>$LAST_COMMIT</code>
+
+  Last commit (hash): <code>$LAST_HASH</code>
+  "
+
 	telegram-send --file *-signed.zip
 
 	make clean
