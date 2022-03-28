@@ -42,6 +42,6 @@
 
 	mv AtomX.sh Kernel/AtomX.sh
 	cd Kernel
-	bash AtomX.sh
+	bash AtomX.sh --compiler=clang --device=lisa
 
 ############################################################################
