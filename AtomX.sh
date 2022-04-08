@@ -7,6 +7,7 @@ KBUILD_HOST="Drone"
 # Build type (Fresh build: clean | incremental build: dirty)
 # (default: dirty | modes: clean, dirty)
 BUILD='clean'
+
 ############################################################################
 
 ########################    DIRECTOR PATHS   ###############################
@@ -91,7 +92,6 @@ compiler_setup() {
 		HOSTLD=ld.lld                    \
 		O=work ARCH=arm64                \
 		CC_COMPAT=$CC_COMPAT             \
-		DTC_EXT=$(which dtc)             \
 		PATH=$C_PATH/bin:$PATH           \
 		CROSS_COMPILE_COMPAT=$CC_32      \
 		KBUILD_BUILD_USER=$KBUILD_USER   \
