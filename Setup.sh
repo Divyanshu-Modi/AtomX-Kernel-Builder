@@ -21,9 +21,16 @@
 ############################## Setup Toolchains ############################
 
 	mkdir toolchains
-	gut https://github.com/mvaisakh/gcc-arm -b gcc-master toolchains/gcc-arm
-	gut https://gitlab.com/dakkshesh07/neutron-clang toolchains/clang
-
+	if [[ ! -d /usr/gcc32 ]]; then
+		gut https://github.com/mvaisakh/gcc-arm -b gcc-master toolchains/gcc-arm
+	else
+		ln -s /usr/gcc32 toolchains/gcc-arm
+	fi
+	if [[ ! -d /usr/clang ]]; then
+		gut https://gitlab.com/dakkshesh07/neutron-clang toolchains/clang
+	else
+		ln -s /usr/clang toolchains/clang
+	fi
 ############################################################################
 
 ############################## Setup AnyKernel #############################
