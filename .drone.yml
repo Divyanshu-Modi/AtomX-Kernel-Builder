@@ -1,9 +1,11 @@
+clone:
+  depth: 1
 kind: pipeline
 name: AtomX Drone
 
 steps:
  - name: compile
-   image: atomxorg/archlinux:latest
+   image: atomxorg/ubuntu:latest
    environment:
      BOT_API_KEY:
        from_secret: BOT_API_KEY
@@ -13,7 +15,7 @@ steps:
        from_secret: SOURCE
    commands:
       - cd /drone/src
-      - bash Setup.sh
+      - /noclone3 bash Setup.sh
 
 trigger:
   event:

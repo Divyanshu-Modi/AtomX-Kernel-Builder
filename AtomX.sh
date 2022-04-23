@@ -110,11 +110,9 @@ kernel_builder() {
 	case $BUILD in
 		clean)
 			rm -rf work || mkdir work
-			BUILD_TYPE=$BUILD
 		;;
 		*)
 			muke clean mrproper distclean
-			BUILD_TYPE="incremental"
 		;;
 	esac
 
@@ -126,7 +124,7 @@ kernel_builder() {
 	inform "
 		*************Build Triggered*************
 		Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
-		Build Type: <code>$BUILD_TYPE</code>
+		Build Number: <code>$DRONE_BUILD_NUMBER</code>
 		Device: <code>$DEVICENAME</code>
 		Codename: <code>$CODENAME</code>
 		Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>

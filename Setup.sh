@@ -9,8 +9,9 @@
 ############################################################################
 
 ######################## Setup Telegram API ################################
-
-	pip -q install telegram-send
+	if [[ ! $(which telegram-send) ]]; then
+		pip -q install telegram-send
+	fi
 	sed -i s/demo1/${BOT_API_KEY}/g telegram-send.conf
 	sed -i s/demo2/${CHAT_ID}/g telegram-send.conf
 	mkdir $HOME/.config
@@ -21,6 +22,11 @@
 ############################## Setup Toolchains ############################
 
 	mkdir toolchains
+	if [[ ! -d /usr/gcc64 ]]; then
+		gut https://github.com/mvaisakh/gcc-arm64 -b gcc-master toolchains/gcc-arm
+	else
+		ln -s /usr/gcc64 toolchains/gcc-arm64
+	fi
 	if [[ ! -d /usr/gcc32 ]]; then
 		gut https://github.com/mvaisakh/gcc-arm -b gcc-master toolchains/gcc-arm
 	else
