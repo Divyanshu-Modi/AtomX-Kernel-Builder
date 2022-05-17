@@ -50,10 +50,12 @@ inform() {
 
 muke() {
 	if [[ "$SILENCE" == "1" ]]; then
-		KERN_MAKE_ARGS="-s $KERN_MAKE_ARGS"
+		MAKE_ARGS+=("-s")
 	fi
-
-	make $@ $KERN_MAKE_ARGS
+	if [[ "$LOG" == "1" ]]; then
+		FLAG='2>&1 | tee ../log.txt'
+	fi
+	make $@ ${MAKE_ARGS[@]} $FLAG
 }
 
 usage() {
@@ -68,42 +70,31 @@ usage() {
 
 compiler_setup() {
 ############################  COMPILER SETUP  ##############################
+	MAKE_ARGS=()
 	case $COMPILER in
 		clang)
 			CC='clang'
 			C_PATH="$TLDR/clang"
 		;;
 		gcc)
-			CC='aarch64-elf-gcc'
-			KERN_MAKE_ARGS="                 \
-					HOSTCC=gcc                   \
-					CC=$CC                       \
-					HOSTCXX=aarch64-elf-g++      \
-					CROSS_COMPILE=aarch64-elf-"
-			C_PATH="$TLDR/gcc-arm64"
+			CC='aarch64-linux-gnu-gcc'
+			C_PATH="$TLDR/gcc-arm64-gnu/bin:$TLDR/clang"
 		;;
 	esac
 	CC_32="$TLDR/gcc-arm/bin/arm-eabi-"
 	CC_COMPAT="$TLDR/gcc-arm/bin/arm-eabi-gcc"
-
-	KERN_MAKE_ARGS="$KERN_MAKE_ARGS    \
-		LLVM=1                           \
-		LLVM_IAS=1                       \
-		HOSTLD=ld.lld                    \
-		O=work ARCH=arm64                \
-		CC_COMPAT=$CC_COMPAT             \
-		PATH=$C_PATH/bin:$PATH           \
-		CROSS_COMPILE_COMPAT=$CC_32      \
-		KBUILD_BUILD_USER=$KBUILD_USER   \
-		KBUILD_BUILD_HOST=$KBUILD_HOST   \
-		LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH"
+	MAKE_ARGS+=("ARCH=arm64" "O=work" "LLVM=1" "HOSTLD=ld.lld" 
+				"PATH=$C_PATH/bin:$PATH" "CC=$CC" "CC_COMPAT=$CC_COMPAT"
+				"CROSS_COMPILE=aarch64-linux-gnu-" "CROSS_COMPILE_COMPAT=$CC_32"
+				"KBUILD_BUILD_USER=$KBUILD_USER" "KBUILD_BUILD_HOST=$KBUILD_HOST"
+				"LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH")
 ############################################################################
 }
 
 kernel_builder() {
 ##################################  BUILD  #################################
 	if [[ -z $CODENAME ]]; then
-		error 'device not mentioned'
+		error 'Codename not present connot proceed'
 		exit 1
 	fi
 
@@ -121,18 +112,20 @@ kernel_builder() {
 
 	DFCF="vendor/${CODENAME}-${SUFFIX}_defconfig"
 
+	# Make .config
+	muke $DFCF
+
+	source work/.config
+
 	inform "
 		*************Build Triggered*************
 		Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
 		Build Number: <code>$DRONE_BUILD_NUMBER</code>
 		Device: <code>$DEVICENAME</code>
 		Codename: <code>$CODENAME</code>
-		Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
+		Compiler: <code>$(echo $CONFIG_CC_VERSION_TEXT | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
 		Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
 	"
-
-	# Make .config
-	muke $DFCF
 
 	# Compile
 	muke -j$(nproc)
@@ -159,13 +152,6 @@ kernel_builder() {
 
 zipper() {
 ####################################  ZIP  #################################
-	source work/.config
-
-	VERSION=`echo $CONFIG_LOCALVERSION | cut -c 8-`
-	KERNEL_VERSION=$(make kernelversion)
-	LAST_COMMIT=$(git show -s --format=%s)
-	LAST_HASH=$(git rev-parse --short HEAD)
-
 	if [[ ! -d $AK3_DIR ]]; then
 		error 'Anykernel not present cannot zip'
 	fi
@@ -186,6 +172,11 @@ zipper() {
 		sed -i 's/\(kernel\/[^: ]*\/\)\([^: ]*\.ko\)/\/vendor\/lib\/modules\/\2/g' $AKVDR/modules.dep
 		sed -i 's/.*\///g' $AKVDR/modules.load
 	fi
+
+	VERSION=`echo $CONFIG_LOCALVERSION | cut -c 8-`
+	KERNEL_VERSION=$(make kernelversion)
+	LAST_COMMIT=$(git show -s --format=%s)
+	LAST_HASH=$(git rev-parse --short HEAD)
 
 	cd $AK3_DIR
 
@@ -230,12 +221,10 @@ for arg in "$@"; do
 	case "${arg}" in
 		"--compiler="*)
 			COMPILER=${arg#*=}
-			case ${COMPILER} in
-				clang)
-					COMPILER="clang"
-				;;
-				gcc)
-					COMPILER="gcc"
+			COMPILER=${COMPILER,,}
+			case $COMPILER in
+				clang | gcc)
+					compiler_setup
 				;;
 				*)
 					usage
@@ -243,8 +232,8 @@ for arg in "$@"; do
 			esac
 		;;
 		"--device="*)
-			CODENAME=${arg#*=}
-			case $CODENAME in
+			CODE_NAME=${arg#*=}
+			case $CODE_NAME in
 				lisa)
 					DEVICENAME='Xiaomi 11 lite 5G NE'
 					CODENAME='lisa'
@@ -271,5 +260,4 @@ done
 # DO NOT MODIFY!!!!
 sed -i '13d;14d;15d;16d;17d' $KERNEL_DIR/scripts/depmod.sh
 
-compiler_setup
 kernel_builder
