@@ -130,7 +130,7 @@ kernel_builder() {
 	# Compile
 	muke -j$(nproc)
 
-	if [[ "$MODULES" == "1" ]]; then
+	if [[ "$MODULES" == "1" ]] && [[ $CONFIG_MODULES == "y" ]]; then
 		muke -j$(nproc)        \
 			'modules_install'    \
 			INSTALL_MOD_STRIP=1  \
@@ -162,7 +162,7 @@ zipper() {
 	cp $KERNEL_DIR/work/arch/arm64/boot/$TARGET $AK3_DIR
 	cp $DTB_PATH/*.dtb $AK3_DIR/dtb
 	cp $DTB_PATH/*.img $AK3_DIR/
-	if [[ "$MODULES" == "1" ]]; then
+	if [[ "$MODULES" == "1" ]] && [[ $CONFIG_MODULES == "y" ]]; then
 		MOD_NAME="$(cat work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')"
 		MOD_PATH="work/modules/lib/modules/$MOD_NAME"
 
