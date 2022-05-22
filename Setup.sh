@@ -55,6 +55,8 @@
 
 	mv AtomX.sh Kernel/AtomX.sh
 	cd Kernel
+	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
 	bash AtomX.sh --compiler=clang --device=lisa
+	exit 0
 
 ############################################################################
