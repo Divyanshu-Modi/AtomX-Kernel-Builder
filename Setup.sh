@@ -23,7 +23,7 @@
 
 	mkdir toolchains
 	if [[ ! -d /usr/gcc64 ]]; then
-		gut https://github.com/mvaisakh/gcc-arm64 -b gcc-master toolchains/gcc-arm
+		gut https://github.com/mvaisakh/gcc-arm64 -b gcc-master toolchains/gcc-arm64
 	else
 		ln -s /usr/gcc64 toolchains/gcc-arm64
 	fi
@@ -33,7 +33,7 @@
 		ln -s /usr/gcc32 toolchains/gcc-arm
 	fi
 	if [[ ! -d /usr/clang ]]; then
-		gut https://gitlab.com/dakkshesh07/neutron-clang toolchains/clang
+		gut https://gitlab.com/ElectroPerf/atom-x-clang toolchains/clang
 	else
 		ln -s /usr/clang toolchains/clang
 	fi
@@ -47,7 +47,7 @@
 
 ############################## Setup Kernel ################################
 
-	gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_sm7325 -b kernel.lnx.5.4.r1-rel Kernel
+	gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_sm7325 -b codelinaro Kernel
 
 ############################################################################
 
@@ -55,7 +55,7 @@
 
 	mv AtomX.sh Kernel/AtomX.sh
 	cd Kernel
-	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
+#	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
 	bash AtomX.sh --compiler=clang --device=lisa
 	exit 0
 

@@ -5,7 +5,7 @@ name: AtomX Drone
 
 steps:
  - name: compile
-   image: atomxorg/ubuntu:latest
+   image: atomxorg/archlinux:latest
    environment:
      BOT_API_KEY:
        from_secret: BOT_API_KEY
@@ -15,7 +15,7 @@ steps:
        from_secret: SOURCE
    commands:
       - cd /drone/src
-      - /noclone3 bash Setup.sh
+      - bash Setup.sh
 
 trigger:
   event:

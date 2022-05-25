@@ -110,7 +110,9 @@ kernel_builder() {
 
 	if [[ $PIXEL_THERMALS == "1" ]]; then
 		./scripts/config --file arch/arm64/configs/vendor/lisa-qgki_defconfig -d MI_THERMAL_CPU_THROTTLE
-		inform "building with pixel thermal support"
+		THERMAL="Pixel Thermal"
+	else
+		THERMAL="XiaoMi Thermal"
 	fi
 
 	# Make .config
@@ -128,6 +130,7 @@ kernel_builder() {
 		Codename: <code>$CODENAME</code>
 		Compiler: <code>$C_NAME</code>
 		Compiler_32: <code>$C_NAME_32</code>
+		Thermal Support: <code>$THERMAL</code>
 	"
 
 	# Compile
