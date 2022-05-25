@@ -48,12 +48,6 @@ inform() {
 }
 
 muke() {
-	if [[ "$SILENCE" == "1" ]]; then
-		MAKE_ARGS+=("-s")
-	fi
-	if [[ "$LOG" == "1" ]]; then
-		FLAG='2>&1 | tee ../log.txt'
-	fi
 	make $@ ${MAKE_ARGS[@]} $FLAG
 }
 
@@ -70,23 +64,26 @@ usage() {
 compiler_setup() {
 ############################  COMPILER SETUP  ##############################
 	MAKE_ARGS=()
-	case $COMPILER in
-		clang)
-			CC='clang'
-			C_PATH="$TLDR/clang"
-		;;
-		gcc)
-			CC='aarch64-linux-gnu-gcc'
-			C_PATH="$TLDR/gcc-arm64-gnu/bin:$TLDR/clang"
-		;;
-	esac
-	CC_32="$TLDR/gcc-arm/bin/arm-eabi-"
-	CC_COMPAT="$TLDR/gcc-arm/bin/arm-eabi-gcc"
-	MAKE_ARGS+=("ARCH=arm64" "O=work" "LLVM=1" "HOSTLD=ld.lld" 
-				"PATH=$C_PATH/bin:$PATH" "CC=$CC" "CC_COMPAT=$CC_COMPAT"
-				"CROSS_COMPILE=aarch64-linux-gnu-" "CROSS_COMPILE_COMPAT=$CC_32"
-				"KBUILD_BUILD_USER=$KBUILD_USER" "KBUILD_BUILD_HOST=$KBUILD_HOST"
-				"LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH")
+	# default to clang
+	CC='clang'
+	C_PATH="$TLDR/$CC"
+	LLVM_PATH="$C_PATH/bin"
+	if [[ $COMPILER == gcc ]]; then
+		# Just override the existing declarations
+		CC='aarch64-linux-gnu-gcc'
+		C_PATH="$TLDR/gcc-arm64"
+	fi
+	MAKE_ARGS+=("O=work"
+				"ARCH=arm64"
+				"LLVM=$LLVM_PATH"
+				"HOSTLD=ld.lld" "CC=$CC"
+				"PATH=$C_PATH/bin:$PATH"
+				"KBUILD_BUILD_USER=$KBUILD_USER"
+				"KBUILD_BUILD_HOST=$KBUILD_HOST"
+				"CROSS_COMPILE=aarch64-linux-gnu-"
+				"CC_COMPAT=$TLDR/gcc-arm/bin/arm-eabi-gcc"
+				"LD_LIBRARY_PATH=$C_PATH/lib:$LD_LIBRARY_PATH"
+				"CROSS_COMPILE_COMPAT=$TLDR/gcc-arm/bin/arm-eabi-")
 ############################################################################
 }
 
@@ -120,6 +117,8 @@ kernel_builder() {
 	muke $DFCF
 
 	source work/.config
+	C_NAME=$(echo $CONFIG_CC_VERSION_TEXT | head -n 1 | perl -pe 's/\(http.*?\)//gs')
+	C_NAME_32=$($(echo ${MAKE_ARGS[@]} | sed s/' '/'\n'/g | grep CC_COMPAT | cut -c 11-) --version | head -n 1)
 
 	inform "
 		*************Build Triggered*************
@@ -127,14 +126,14 @@ kernel_builder() {
 		Build Number: <code>$DRONE_BUILD_NUMBER</code>
 		Device: <code>$DEVICENAME</code>
 		Codename: <code>$CODENAME</code>
-		Compiler: <code>$(echo $CONFIG_CC_VERSION_TEXT | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
-		Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
+		Compiler: <code>$C_NAME</code>
+		Compiler_32: <code>$C_NAME_32</code>
 	"
 
 	# Compile
 	muke -j$(nproc)
 
-	if [[ "$MODULES" == "1" ]] && [[ $CONFIG_MODULES == "y" ]]; then
+	if [[ $CONFIG_MODULES == "y" ]]; then
 		muke -j$(nproc)        \
 			'modules_install'    \
 			INSTALL_MOD_STRIP=1  \
@@ -166,7 +165,7 @@ zipper() {
 	cp $KERNEL_DIR/work/arch/arm64/boot/$TARGET $AK3_DIR
 	cp $DTB_PATH/*.dtb $AK3_DIR/dtb
 	cp $DTB_PATH/*.img $AK3_DIR/
-	if [[ "$MODULES" == "1" ]] && [[ $CONFIG_MODULES == "y" ]]; then
+	if [[ $CONFIG_MODULES == "y" ]]; then
 		MOD_NAME="$(cat work/include/generated/utsrelease.h | cut -c 21- | tr -d '"')"
 		MOD_PATH="work/modules/lib/modules/$MOD_NAME"
 
@@ -192,12 +191,11 @@ zipper() {
 		AtomX-Version: <code>$VERSION</code>
 		CI: <code>$KBUILD_HOST</code>
 		Core count: <code>$(nproc)</code>
-		Compiler: <code>$($C_PATH/bin/$CC --version | head -n 1 | perl -pe 's/\(http.*?\)//gs')</code>
-		Compiler_32: <code>$($CC_COMPAT --version | head -n 1)</code>
+		Compiler: <code>$C_NAME</code>
+		Compiler_32: <code>$C_NAME_32</code>
 		Device: <code>$DEVICENAME</code>
 		Codename: <code>$CODENAME</code>
 		Build Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
-		Build Type: <code>$BUILD_TYPE</code>
 
 		-----------last commit details-----------
 		Last commit (name): <code>$LAST_COMMIT</code>
@@ -242,7 +240,6 @@ for arg in "$@"; do
 					DEVICENAME='Xiaomi 11 lite 5G NE'
 					CODENAME='lisa'
 					SUFFIX='qgki'
-					MODULES='1'
 					TARGET='Image'
 				;;
 				*)
@@ -251,7 +248,7 @@ for arg in "$@"; do
 			esac
 		;;
 		"--silence")
-			SILENCE='1'
+			MAKE_ARGS+=("-s")
 		;;
 		"--pixel_thermals")
 			PIXEL_THERMALS='1'
