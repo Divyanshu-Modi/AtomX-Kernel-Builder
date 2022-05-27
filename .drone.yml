@@ -5,7 +5,7 @@ name: AtomX Drone
 
 steps:
  - name: compile
-   image: atomxorg/archlinux:latest
+   image: atomxorg/arch-linux:kernel
    environment:
      BOT_API_KEY:
        from_secret: BOT_API_KEY

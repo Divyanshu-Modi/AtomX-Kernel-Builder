@@ -9,8 +9,17 @@
 ############################################################################
 
 ######################## Setup Telegram API ################################
+	if [[ $(which pip) ]]; then
+		PIP=pip
+	elif [[ $(which pip3) ]]; then
+		PIP=pip3
+	elif [[ ! $(which pip2) ]]; then
+		PIP=pip2
+	else
+		exit
+	fi
 	if [[ ! $(which telegram-send) ]]; then
-		pip -q install telegram-send
+		$PIP -q install telegram-send
 	fi
 	sed -i s/demo1/${BOT_API_KEY}/g telegram-send.conf
 	sed -i s/demo2/${CHAT_ID}/g telegram-send.conf
@@ -57,6 +66,8 @@
 	cd Kernel
 #	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
 	bash AtomX.sh --compiler=clang --device=lisa
-	exit 0
+
+# if this is called build failed
+	exit 1
 
 ############################################################################

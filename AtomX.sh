@@ -41,6 +41,7 @@ error() {
 
 success() {
 	telegram-send "Success: $@"
+	exit 0
 }
 
 inform() {
@@ -266,5 +267,9 @@ done
 # Remove testing of System.map as test always fails to check for file
 # DO NOT MODIFY!!!!
 sed -i '13d;14d;15d;16d;17d' $KERNEL_DIR/scripts/depmod.sh
+
+# Fix for docker's unusal locale config
+sed -i s/"#en_US.UTF-8 UTF-8"/"en_US.UTF-8 UTF-8"/g /etc/locale.gen
+locale-gen
 
 kernel_builder
