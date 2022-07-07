@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #########################    CONFIGURATION    ##############################
 
 # User details
@@ -13,14 +15,13 @@ BUILD='clean'
 ########################    DIRECTOR PATHS   ###############################
 
 # Kernel Directory
-KERNEL_DIR=`pwd`
+KERNEL_DIR=$(pwd)
 
 # Propriatary Directory (default paths may not work!)
 PRO_PATH="$KERNEL_DIR/.."
 
 # Anykernel Directories
 AK3_DIR="$PRO_PATH/AnyKernel3"
-AKSH="$AK3_DIR/anykernel.sh"
 AKVDR="$AK3_DIR/modules/vendor/lib/modules"
 
 # Toolchain Directory
@@ -35,13 +36,12 @@ DTB_PATH="$KERNEL_DIR/work/arch/arm64/boot/dts/vendor/qcom"
 
 # functions
 error() {
-	telegram-send "Error⚠️: $@"
+	telegram-send "Error⚠️: $*"
 	exit 1
 }
 
 success() {
-	telegram-send "Success: $@"
-	exit 0
+	telegram-send "Success: $*"
 }
 
 inform() {
@@ -49,7 +49,9 @@ inform() {
 }
 
 muke() {
-	make $@ ${MAKE_ARGS[@]} $FLAG
+	if ! make $@ ${MAKE_ARGS[@]} $FLAG; then
+		error "make failed"
+	fi
 }
 
 usage() {
@@ -187,7 +189,7 @@ zipper() {
 
 	cd $AK3_DIR
 
-	make zip VERSION=$VERSION
+	make zip VERSION="$VERSION"
 
 	inform "
 		*************AtomX-Kernel*************
@@ -211,9 +213,9 @@ zipper() {
 
 	make clean
 
-	cd $KERNEL_DIR
+	cd "$KERNEL_DIR" || exit
 
-	success "build completed in $(($DIFF / 60)).$(($DIFF % 60)) mins"
+	success "build completed in $((DIFF / 60)).$((DIFF % 60)) mins"
 
 ############################################################################
 }
@@ -266,10 +268,6 @@ done
 
 # Remove testing of System.map as test always fails to check for file
 # DO NOT MODIFY!!!!
-sed -i '13d;14d;15d;16d;17d' $KERNEL_DIR/scripts/depmod.sh
-
-# Fix for docker's unusal locale config
-sed -i s/"#en_US.UTF-8 UTF-8"/"en_US.UTF-8 UTF-8"/g /etc/locale.gen
-locale-gen
+sed -i '13d;14d;15d;16d;17d' "$KERNEL_DIR"/scripts/depmod.sh
 
 kernel_builder

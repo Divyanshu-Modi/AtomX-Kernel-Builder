@@ -1,51 +1,37 @@
-#bin/#!/bin/bash
+#!/bin/bash
 
 ###############################   MISC   ###################################
 
 	gut() {
-		git clone --depth=1 -q $@
+		git clone --depth=1 -q "$@"
 	}
 
 ############################################################################
 
 ######################## Setup Telegram API ################################
-	if [[ $(which pip) ]]; then
-		PIP=pip
-	elif [[ $(which pip3) ]]; then
-		PIP=pip3
-	elif [[ ! $(which pip2) ]]; then
-		PIP=pip2
-	else
-		exit
-	fi
 	if [[ ! $(which telegram-send) ]]; then
-		$PIP -q install telegram-send
+		pip3 -q install telegram-send
 	fi
-	sed -i s/demo1/${BOT_API_KEY}/g telegram-send.conf
-	sed -i s/demo2/${CHAT_ID}/g telegram-send.conf
-	mkdir $HOME/.config
-	mv telegram-send.conf $HOME/.config/telegram-send.conf
+	sed -i s/demo1/"${BOT_API_KEY}"/g telegram-send.conf
+	sed -i s/demo2/"${CHAT_ID}"/g telegram-send.conf
+	mkdir "$HOME"/.config
+	mv telegram-send.conf "$HOME"/.config/telegram-send.conf
 
 ############################################################################
 
 ############################## Setup Toolchains ############################
+	toolchains_setup() {
+		if [[ ! -d /usr/$1 ]]; then
+			gut "$3" -b "$4" "$2"
+		else
+			ln -s /usr/"$1" "$2"
+		fi
+	}
 
 	mkdir toolchains
-	if [[ ! -d /usr/gcc64 ]]; then
-		gut https://github.com/mvaisakh/gcc-arm64 -b gcc-master toolchains/gcc-arm64
-	else
-		ln -s /usr/gcc64 toolchains/gcc-arm64
-	fi
-	if [[ ! -d /usr/gcc32 ]]; then
-		gut https://github.com/mvaisakh/gcc-arm -b gcc-master toolchains/gcc-arm
-	else
-		ln -s /usr/gcc32 toolchains/gcc-arm
-	fi
-	if [[ ! -d /usr/clang ]]; then
-		gut https://gitlab.com/ElectroPerf/atom-x-clang toolchains/clang
-	else
-		ln -s /usr/clang toolchains/clang
-	fi
+	toolchains_setup gcc64 toolchains/gcc-arm64 https://github.com/mvaisakh/gcc-arm64 gcc-master
+	toolchains_setup gcc32 toolchains/gcc-arm https://github.com/mvaisakh/gcc-arm gcc-master
+	toolchains_setup clang toolchains/clang https://gitlab.com/dakkshesh07/neutron-clang Neutron-16
 ############################################################################
 
 ############################## Setup AnyKernel #############################
@@ -63,11 +49,8 @@
 ############################ Setup Scripts #################################
 
 	mv AtomX.sh Kernel/AtomX.sh
-	cd Kernel
-#	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
+	cd Kernel || exit
 	bash AtomX.sh --compiler=clang --device=lisa
-
-# if this is called build failed
-	exit 1
+	exit 0
 
 ############################################################################
