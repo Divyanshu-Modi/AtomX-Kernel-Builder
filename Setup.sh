@@ -66,8 +66,6 @@
 	cd Kernel
 #	bash AtomX.sh --compiler=clang --device=lisa --pixel_thermals
 	bash AtomX.sh --compiler=clang --device=lisa
-
-# if this is called build failed
-	exit 1
+	exit 0
 
 ############################################################################
