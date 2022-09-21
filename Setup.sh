@@ -3,7 +3,7 @@
 ###############################   MISC   ###################################
 
 	gut() {
-		git clone --depth=1 -q "$@"
+		gh repo clone $1 $3 -- --depth=1 -b $2
 	}
 
 ############################################################################
@@ -22,7 +22,7 @@
 ############################## Setup Toolchains ############################
 	toolchains_setup() {
 		if [[ ! -d /usr/$1 ]]; then
-			gut "$3" -b "$4" "$2"
+			exit
 		else
 			ln -s /usr/"$1" "$2"
 		fi
@@ -36,13 +36,13 @@
 
 ############################## Setup AnyKernel #############################
 
-	gut https://github.com/Atom-X-Devs/AnyKernel3 -b main AnyKernel3
+	gut Atom-X-Devs/AnyKernel3 main AnyKernel3
 
 ############################################################################
 
 ############################## Setup Kernel ################################
 
-	gut https://github.com/Atom-X-Devs/android_kernel_xiaomi_sm7325 -b codelinaro Kernel
+	gut Atom-X-Devs/android_kernel_xiaomi_sm7325 codelinaro Kernel
 
 ############################################################################
 
