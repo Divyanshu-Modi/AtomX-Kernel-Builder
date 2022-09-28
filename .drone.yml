@@ -11,11 +11,12 @@ steps:
        from_secret: BOT_API_KEY
      CHAT_ID:
        from_secret: CHAT_ID
-     SOURCE:
-       from_secret: SOURCE
+     GH_TOKEN:
+       from_secret: GH_TOKEN
    commands:
       - cd /drone/src
       - bash Setup.sh
+   debug: true
 
 trigger:
   event:
