@@ -116,11 +116,15 @@ kernel_builder() {
 	source work/.config
 	MOD_NAME="$(muke kernelrelease -s)"
 	KERNEL_VERSION=$(echo "$MOD_NAME" | cut -c -7)
+	BUILD_NUMBER="$DRONE_BUILD_NUMBER"
+	if [[ -z "$BUILD_NUMBER" ]]; then
+		BUILD_NUMBER="$GITHUB_RUN_ID"
+	fi
 
 	inform "
 		*************Build Triggered*************
 		Date: <code>$(date +"%Y-%m-%d %H:%M")</code>
-		Build Number: <code>$DRONE_BUILD_NUMBER</code>
+		Build Number: <code>$BUILD_NUMBER</code>
 		Linux Version: <code>$KERNEL_VERSION</code>
 		Kernel Name: <code>$MOD_NAME</code>
 		Device: <code>$DEVICENAME</code>
