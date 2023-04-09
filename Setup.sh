@@ -31,7 +31,7 @@
 	mkdir toolchains
 	toolchains_setup gcc64 toolchains/gcc-arm64 https://github.com/mvaisakh/gcc-arm64 gcc-master
 	toolchains_setup gcc32 toolchains/gcc-arm https://github.com/mvaisakh/gcc-arm gcc-master
-	toolchains_setup clang toolchains/clang https://gitlab.com/dakkshesh07/neutron-clang Neutron-16
+	#toolchains_setup clang toolchains/clang https://gitlab.com/dakkshesh07/neutron-clang Neutron-16
 ############################################################################
 
 ############################## Setup AnyKernel #############################
@@ -48,9 +48,9 @@
 
 ############################ Setup Scripts #################################
 
-	mv AtomX.sh Kernel/AtomX.sh
-	cd Kernel || exit
-	bash AtomX.sh --compiler=clang --device=lisa
+	#mv AtomX.sh Kernel/AtomX.sh
+	#cd Kernel || exit
+	#bash AtomX.sh --compiler=clang --device=lisa
 	exit 0
 
 ############################################################################
